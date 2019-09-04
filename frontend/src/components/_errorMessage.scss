@@ -1,0 +1,26 @@
+@import '~@style/_colors';
+@import '~@style/_variables';
+
+.error-message {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5em 2em;
+  box-sizing: border-box;
+  color: $color-error-message;
+
+  @media #{$mobile} {
+    padding: 1.25em 1em;
+  }
+
+  &__icon {
+    font-size: 2em;
+    margin: 0 0 0.5em 0;
+  }
+
+  &__text {
+    text-align: center;
+  }
+}

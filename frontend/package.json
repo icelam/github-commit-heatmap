@@ -1,0 +1,78 @@
+{
+  "name": "github-commit-heatmap",
+  "version": "1.0.0",
+  "description": "Heatmap of Github Commit Day / Hour using Github GraphQL API and D3.js",
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack/webpack.prod.conf.js  --colors",
+    "dev": "webpack-dev-server --open --config webpack/webpack.dev.conf.js",
+    "lint": "./node_modules/.bin/eslint 'src/**/*.js'; exit 0;",
+    "lint:entry": "./node_modules/.bin/eslint --no-ignore"
+  },
+  "author": "Ice Lam",
+  "license": "ISC",
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.10.2",
+    "autoprefixer": "^9.6.1",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.4",
+    "css-loader": "^1.0.0",
+    "cssnano": "^4.1.10",
+    "dotenv": "^8.1.0",
+    "eslint": "^5.16.0",
+    "eslint-import-resolver-webpack": "^0.10.1",
+    "eslint-loader": "^2.2.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-vue": "^4.0.0",
+    "file-loader": "^2.0.0",
+    "html-loader": "^0.5.5",
+    "html-variables-plugin": "^1.0.0",
+    "html-webpack-plugin": "^4.0.0-beta.5",
+    "mini-css-extract-plugin": "^0.4.4",
+    "node-sass": "^4.12.0",
+    "postcss-loader": "^3.0.0",
+    "prerender-spa-plugin": "^3.4.0",
+    "sass-loader": "^7.3.1",
+    "style-loader": "^0.23.1",
+    "url-loader": "^1.1.2",
+    "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.39.2",
+    "webpack-bundle-analyzer": "^3.4.1",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0",
+    "webpack-merge": "^4.1.4",
+    "workbox-webpack-plugin": "^4.3.1"
+  },
+  "dependencies": {
+    "axios": "^0.19.0",
+    "babel-runtime": "^6.26.0",
+    "core-js": "^3.2.1",
+    "d3": "^5.11.0",
+    "moment-timezone": "^0.5.26",
+    "vue": "^2.6.10",
+    "vue-loader": "^15.7.1",
+    "vue-router": "^3.1.2"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not ie <= 9",
+      "not op_mini all",
+      "ie 10",
+      "ie 11"
+    ],
+    "development": [
+      ">0.2%",
+      "not dead",
+      "not ie <= 9",
+      "not op_mini all",
+      "ie 10",
+      "ie 11"
+    ]
+  }
+}
