@@ -18,7 +18,7 @@ const dotenvFiles = [
   Path.resolve(__dirname, '../.env')
 ].filter(dotenvFile => fs.existsSync(dotenvFile));
 
-console.log(dotenvFiles[0] + ' will be used.\n');
+console.log(`${dotenvFiles[0]} will be used.\n`);
 
 // Load env variables
 dotenv.config({
@@ -40,8 +40,7 @@ module.exports = merge(baseWebpackConfig, {
     overlay: {
       warnings: false,
       errors: true
-    },
-    //disableHostCheck: true
+    }
   },
   plugins: [
     new Webpack.DefinePlugin(clientEnv.stringified)
@@ -54,7 +53,7 @@ module.exports = merge(baseWebpackConfig, {
         enforce: 'pre',
         loader: 'eslint-loader',
         options: {
-          emitWarning: true,
+          emitWarning: true
         }
       },
       {

@@ -49,8 +49,12 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
       };
 
       const displayPosition = {
-        top: tooltipPosition.top + 80 >= viewport.height ? tooltipPosition.top - 100 : tooltipPosition.top,
-        left: tooltipPosition.left + 110 >= viewport.width ? tooltipPosition.left - 140 : tooltipPosition.left
+        top: tooltipPosition.top + 80 >= viewport.height
+          ? tooltipPosition.top - 100
+          : tooltipPosition.top,
+        left: tooltipPosition.left + 110 >= viewport.width
+          ? tooltipPosition.left - 140
+          : tooltipPosition.left
       };
 
       tooltip
@@ -124,29 +128,29 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
       // Build color scale
       const step = d3.scaleLinear()
         .domain([1, 5])
-        .range([1, d3.max(dataset, d => d.value)]);
+        .range([1, d3.max(dataset, (d) => d.value)]);
 
       const myColor = d3.scaleLinear()
-        .domain([0, step(2), step(3), step(4), d3.max(dataset, d => d.value)])
+        .domain([0, step(2), step(3), step(4), d3.max(dataset, (d) => d.value)])
         .range(color.cells);
 
       // Draw data of heatmap
       const dataCell = svg.selectAll()
-        .data(dataset, d => (`${d.day}':${d.hour}`))
+        .data(dataset, (d) => (`${d.day}':${d.hour}`))
         .enter()
         .append('rect');
 
       dataCell
-        .attr('x', d => x(d.day))
-        .attr('y', d => y(d.hour))
+        .attr('x', (d) => x(d.day))
+        .attr('y', (d) => y(d.hour))
         .attr('width', x.bandwidth())
         .attr('height', y.bandwidth())
-        .style('fill', d => myColor(d.value));
+        .style('fill', (d) => myColor(d.value));
 
       _addTooltip(dataCell);
 
       resolve(true);
-    } catch(err) {
+    } catch (err) {
       reject(err);
     }
   });

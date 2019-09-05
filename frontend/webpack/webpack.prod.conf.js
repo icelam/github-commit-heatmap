@@ -19,7 +19,7 @@ const dotenvFiles = [
   Path.resolve(__dirname, '../.env')
 ].filter(dotenvFile => fs.existsSync(dotenvFile));
 
-console.log(dotenvFiles[0] + ' will be used.\n');
+console.log(`${dotenvFiles[0]} will be used.\n`);
 
 // Load env variables
 dotenv.config({
@@ -45,7 +45,7 @@ module.exports = merge(baseWebpackConfig, {
     }),
     new PrerenderSpaPlugin({
       staticDir: Path.join(__dirname, '../dist'),
-      routes: [ '/' ],
+      routes: ['/'],
       postProcess(renderedRoute) {
         renderedRoute.html = renderedRoute.html.replace(/<script (.*?)src="(.*?)google(.*?)"(.*?)><\/script>/g, '');
         return renderedRoute;
@@ -95,9 +95,9 @@ module.exports = merge(baseWebpackConfig, {
                   {
                     preset: ['default', {
                       discardComments: {
-                        removeAll: true,
-                      },
-                    }],
+                        removeAll: true
+                      }
+                    }]
                   }
                 )
               ]

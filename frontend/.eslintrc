@@ -6,17 +6,20 @@
     "es6": true,
     "node": true
   },
-  "extends": "plugin:vue/essential",
+  "extends": ["plugin:vue/essential", "airbnb-base"],
   "plugins": [
     "vue"
   ],
   "settings": {
-    "import/resolver": {
-      "webpack": {
-        "config": "build/webpack.base.conf.js"
-      },
-      "extensions": [".js", ".vue"]
-    }
+    "import/resolver": [
+      "node",
+      {
+        "webpack": {
+          "config": "./webpack/webpack.base.conf.js"
+        },
+        "extensions": [".js", ".vue"]
+      }
+    ]
   },
   "parserOptions": {
     "sourceType": "module",
@@ -44,6 +47,13 @@
       "always"
     ],
     "no-console": [
+      "off"
+    ],
+    "comma-dangle": [
+      "error",
+      "never"
+    ],
+    "no-underscore-dangle": [
       "off"
     ]
   }

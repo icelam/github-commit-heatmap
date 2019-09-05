@@ -7,7 +7,6 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
   entry: {
-    //app: Path.resolve(__dirname, '../src/index.js')
     app: [Path.resolve(__dirname, '../src/index.js')]
   },
   output: {
@@ -22,7 +21,7 @@ module.exports = {
           chunks: 'initial',
           name: 'vendor',
           enforce: true
-        },
+        }
       }
     }
   },
@@ -41,7 +40,7 @@ module.exports = {
         removeAttributeQuotes: true
       }
     }),
-    new HtmlVariablesPlugin(process.env),
+    new HtmlVariablesPlugin(process.env)
   ],
   resolve: {
     extensions: ['*', '.js', '.vue', '.json', '.scss'],
