@@ -14,28 +14,29 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
 
   // Add tooltip to heatmap
   const _addTooltip = (dataCell) => {
+    const touchDevice = 'ontouchstart' in window
+      || (window.DocumentTouch && document instanceof window.DocumentTouch)
+      || navigator.maxTouchPoints > 0
+      || window.navigator.msMaxTouchPoints > 0;
+
     const tooltip = d3.select(elementSelector)
       .append('div')
       .style('position', 'absolute')
       .style('z-index', 1070)
-      .style('display', 'block')
+      .style('display', 'none')
       .style('text-align', 'left')
       .style('font-size', '0.75em')
       .style('font-size', '0.75em')
       .style('word-wrap', 'break-word')
-      .style('opacity', '0')
+      // .style('opacity', '0')
       .style('background', color.tooltip.background)
       .style('box-shadow', `1px 1px 2px 1px ${color.tooltip.shadow}`)
       .style('padding', '0.6em 0.875em')
       .style('color', color.tooltip.text)
       .style('min-width', '100px');
 
-    function _mouseover() {
-      tooltip
-        .style('opacity', 1);
-    }
-
-    function _mousemove(d) {
+    function _showTooltip(_this, d) {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
       const chartOffset = document.querySelector(`${elementSelector} > svg`).getBoundingClientRect();
 
       const viewport = {
@@ -43,15 +44,25 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
         height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
       };
 
+      // Get mouse position to calculate tooltip position
+      // Issue on d3 returned mouse position when svg is being centered
+      // So we are calculating offset ourselves
+      // And add some spacing to make some space between the tooltip and mouse cursor
       const tooltipPosition = {
-        top: d3.mouse(this)[1] + chartOffset.top + 20,
-        left: d3.mouse(this)[0] + chartOffset.left + 40
+        top: d3.mouse(_this)[1] + chartOffset.top + 20,
+        left: d3.mouse(_this)[0] + chartOffset.left + 40
       };
 
+      // Adjust tooltip display position
+      // Force to show on top left / top right on mobile
+      // Adjust top or left when room is not enough.
+      //
+      // Assuming the tooltip size is about 100px x 70px with 10px spacing around
+      // So we are checking if we have 80px x 110px room to display tooltip
       const displayPosition = {
-        top: tooltipPosition.top + 80 >= viewport.height
-          ? tooltipPosition.top - 100
-          : tooltipPosition.top,
+        top: tooltipPosition.top + 80 >= viewport.height || touchDevice
+          ? tooltipPosition.top - 100 + scrollTop
+          : tooltipPosition.top + scrollTop,
         left: tooltipPosition.left + 110 >= viewport.width
           ? tooltipPosition.left - 140
           : tooltipPosition.left
@@ -67,14 +78,37 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
         .style('left', `${displayPosition.left}px`);
     }
 
-    function _mouseleave() {
-      tooltip.style('opacity', 0);
+    function _mouseover() {
+      tooltip
+        .style('display', 'block');
     }
 
-    dataCell
-      .on('mouseover', _mouseover)
-      .on('mousemove', _mousemove)
-      .on('mouseleave', _mouseleave);
+    function _mousemove(d) {
+      const _this = this;
+      _showTooltip(_this, d);
+    }
+
+    function _mouseout() {
+      tooltip.style('display', 'none');
+    }
+
+    function _touchstart(d) {
+      const _this = this;
+      _mouseover();
+      _showTooltip(_this, d);
+    }
+
+    if (touchDevice) {
+      dataCell
+        .on('touchstart', _touchstart)
+        .on('touchend', _mouseout)
+        .on('touchcancel', _mouseout);
+    } else {
+      dataCell
+        .on('mouseover', _mouseover)
+        .on('mousemove', _mousemove)
+        .on('mouseout', _mouseout);
+    }
   };
 
   // Draw Heatmap
