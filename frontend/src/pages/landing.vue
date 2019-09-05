@@ -5,7 +5,10 @@
       <div id="chart"></div>
     </div>
 
-    <error-message message="Failed to generate heatmap :(<br/><br/>Check your internet connection or retry later." v-show="pageError" />
+    <error-message
+      message="Failed to generate heatmap :(<br/><br/>Check your internet connection or retry later."
+      v-show="pageError"
+    />
 
     <loading v-show="!pageReady && !pageError" />
   </div>
@@ -13,17 +16,16 @@
 
 <script>
 import moment from 'moment-timezone';
-import heatmap from '@heatmap';
-import { DAY_KEYS, HOUR_KEYS } from '@constants/constants';
-import githubService from '@services/github';
-
 import loading from '@components/loading';
 import errorMessage from '@components/errorMessage';
+import githubService from '@services/github';
+import { DAY_KEYS, HOUR_KEYS } from '@constants/constants';
+import heatmap from '@heatmap';
 
 export default {
   components: {
     loading,
-    errorMessage,
+    errorMessage
   },
   data() {
     return {
@@ -34,20 +36,28 @@ export default {
   methods: {
     generateChart() {
       githubService.getRepsitoriesDetails().then(({ data }) => {
-        const repoHistories = data.data.viewer.repositories.nodes.map(
-          repo => repo.defaultBranchRef.target.history.edges
+        // Get all repositories and its branch first, return the data in a flattern array
+        const repoBranches = data.data.viewer.repositories.nodes.flatMap(
+          (repo) => repo.refs.nodes
         );
 
-        const commitDayTime = repoHistories.flat().map(
+        // Extract and flat all histories
+        const repoHistories = repoBranches.flatMap(
+          (branch) => branch.target.history.edges
+        );
+
+        // Extract date and time of commits in Hong Kong timezone
+        const commitDayTime = repoHistories.map(
           (commit) => {
-            const commitTime = moment(commit.node.committedDate);
+            const commitTime = moment(commit.node.committedDate).tz('Asia/Taipei');
             return {
-              day: commitTime.tz('Asia/Taipei').format('ddd'),
-              hour: commitTime.tz('Asia/Taipei').format('ha')
+              day: commitTime.format('ddd'),
+              hour: commitTime.format('ha')
             };
           }
         );
 
+        // Count day / time
         const commitStatistics = commitDayTime.reduce((obj, dataset) => {
           if (typeof obj[dataset.day] !== 'object') {
             obj[dataset.day] = {};
@@ -58,7 +68,8 @@ export default {
           return obj;
         }, {});
 
-        const d3Dataset = DAY_KEYS.flatMap(day => HOUR_KEYS.map(hour => ({
+        // Transform the data for D3 to use
+        const d3Dataset = DAY_KEYS.flatMap((day) => HOUR_KEYS.map((hour) => ({
           day,
           hour,
           value: typeof commitStatistics[day] === 'object' && commitStatistics[day][hour] ? commitStatistics[day][hour] : 0
