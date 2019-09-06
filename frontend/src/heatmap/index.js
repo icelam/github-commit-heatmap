@@ -44,28 +44,46 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
         height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
       };
 
+      const tooltipSize = {
+        width: 120,
+        height: 80
+      };
+
+      const tooltipMargin = {
+        top: 20,
+        right: 0,
+        bottom: 0,
+        left: 40
+      };
+
       // Get mouse position to calculate tooltip position
       // Issue on d3 returned mouse position when svg is being centered
       // So we are calculating offset ourselves
-      // And add some spacing to make some space between the tooltip and mouse cursor
+      // And add 20px x 40 px spacing to make some space between the tooltip and mouse cursor
+      // Default tooltip position is bottom right
       const tooltipPosition = {
-        top: d3.mouse(_this)[1] + chartOffset.top + 20,
-        left: d3.mouse(_this)[0] + chartOffset.left + 40
+        top: d3.mouse(_this)[1] + chartOffset.top,
+        left: d3.mouse(_this)[0] + chartOffset.left
       };
+
+      const cursorSize = 25;
 
       // Adjust tooltip display position
       // Force to show on top left / top right on mobile
       // Adjust top or left when room is not enough.
       //
-      // Assuming the tooltip size is about 100px x 70px with 10px spacing around
-      // So we are checking if we have 80px x 110px room to display tooltip
+      // Assuming the tooltip size is roughly about 120px x 80px
+      // So we are checking if we have 80px x 120px room to display tooltip
+      // Move the tooltip to 20px x 20px top left apart form cursor
       const displayPosition = {
-        top: tooltipPosition.top + 80 >= viewport.height || touchDevice
-          ? tooltipPosition.top - 100 + scrollTop
-          : tooltipPosition.top + scrollTop,
-        left: tooltipPosition.left + 110 >= viewport.width
-          ? tooltipPosition.left - 140
-          : tooltipPosition.left
+        top: tooltipPosition.top + (tooltipSize.height + tooltipMargin.top) >= viewport.height
+          || touchDevice
+          ? tooltipPosition.top - tooltipSize.height + scrollTop
+          : tooltipPosition.top + scrollTop + tooltipMargin.top,
+        left: tooltipPosition.left + (tooltipSize.width + tooltipMargin.left) >= viewport.width
+          || (touchDevice && tooltipPosition.left - (tooltipSize.width + tooltipMargin.right) > 0)
+          ? tooltipPosition.left - tooltipSize.width + cursorSize
+          : tooltipPosition.left + tooltipMargin.left
       };
 
       tooltip
