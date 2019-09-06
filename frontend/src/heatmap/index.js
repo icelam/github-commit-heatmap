@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
 const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
+  // Shared colors
   const color = {
     label: '#767676',
     cells: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'],
@@ -9,8 +10,18 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
       text: '#a8a8a8',
       textEmphsize: '#282828',
       shadow: 'rgba(40, 40, 40, 0.2)'
-    }
+    },
+    hr: '#dddddd'
   };
+
+  // Build color scale
+  const step = d3.scaleLinear()
+    .domain([1, 5])
+    .range([1, d3.max(dataset, (d) => d.value)]);
+
+  const myColor = d3.scaleLinear()
+    .domain([0, step(2), step(3), step(4), d3.max(dataset, (d) => d.value)])
+    .range(color.cells);
 
   // Add tooltip to heatmap
   const _addTooltip = (dataCell) => {
@@ -129,77 +140,141 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
     }
   };
 
-  // Draw Heatmap
+  // Draw heatmap
+  const _drawHeatmap = () => {
+    // Dimensions and margins for heatmap
+    const margin = {
+      top: 0,
+      right: 0,
+      bottom: 15,
+      left: 30
+    };
+
+    const width = w - margin.left - margin.right;
+    const height = h - margin.top - margin.bottom;
+
+    // Add heatmap svg
+    const svg = d3.select(elementSelector)
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Build X scales and axis of heatmap
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(xKeys)
+      .padding(0.1);
+
+    svg.append('g')
+      .attr('transform', `translate(0, ${height})`)
+      .attr('color', color.label)
+      .style('font-family', 'inherit')
+      .call(d3.axisBottom(x).tickSize(0))
+      .select('.domain')
+      .remove();
+
+    // Build Y scales and axis of heatmap
+    const y = d3.scaleBand()
+      .range([height, 0])
+      .domain(yKeys)
+      .padding(0.2);
+
+    svg.append('g')
+      .attr('color', color.label)
+      .style('font-family', 'inherit')
+      .call(d3.axisLeft(y).tickSize(0))
+      .select('.domain')
+      .remove();
+
+    // Draw data of heatmap
+    const dataCell = svg.selectAll()
+      .data(dataset, (d) => (`${d.day}':${d.hour}`))
+      .enter()
+      .append('rect');
+
+    dataCell
+      .attr('x', (d) => x(d.day))
+      .attr('y', (d) => y(d.hour))
+      .attr('width', x.bandwidth())
+      .attr('height', y.bandwidth())
+      .style('fill', (d) => myColor(d.value));
+
+    _addTooltip(dataCell);
+  };
+
+  // Draw legend
+  const _drawLegend = () => {
+    // Legend properties
+    const legendMargin = {
+      top: 10,
+      right: 0,
+      bottom: 0,
+      left: 0
+    };
+
+    const legendData = [0, step(2), step(3), step(4), d3.max(dataset, (d) => d.value)];
+    const legendDataLength = legendData.length;
+    const legendPadding = 5;
+    const legendCellSize = {
+      width: (w - (legendPadding * (legendDataLength - 1))) / legendDataLength,
+      height: 12
+    };
+
+    const legendText = {
+      size: 10,
+      lineHeight: 12
+    };
+
+    const legendHeight = legendMargin.top + legendCellSize.height + legendText.lineHeight;
+
+    // Add legend svg
+    const legend = d3.select(elementSelector)
+      .append('svg')
+      .attr('width', w)
+      .attr('height', legendHeight)
+      .append('g')
+      .selectAll()
+      .data(legendData, (d) => d);
+
+    legend
+      .enter()
+      .append('g')
+      .append('line')
+      .attr('x1', 0)
+      .attr('y1', 2)
+      .attr('x2', w)
+      .attr('y2', 2)
+      .attr('stroke-width', 1)
+      .attr('stroke', color.hr);
+
+    const legendCell = legend
+      .enter()
+      .append('g');
+
+    legendCell
+      .append('rect')
+      .attr('x', (d, i) => legendCellSize.width * i + (legendPadding * i))
+      .attr('y', legendMargin.top)
+      .attr('width', legendCellSize.width)
+      .attr('height', legendCellSize.height)
+      .style('fill', (d, i) => color.cells[i]);
+
+    legendCell
+      .append('text')
+      .attr('fill', color.label)
+      .style('font-size', `${legendText.size}px`)
+      .style('line-height', `${legendText.lineHeight}px`)
+      .text((d) => `≥ ${Math.round(d)}`)
+      .attr('x', (d, i) => legendCellSize.width * i + (legendPadding * i) + 2)
+      .attr('y', legendMargin.top + legendCellSize.height + legendText.lineHeight);
+  };
+
   const _draw = () => new Promise((resolve, reject) => {
     try {
-      // Dimensions and margins for heatmap
-      const margin = {
-        top: 0,
-        right: 0,
-        bottom: 15,
-        left: 30
-      };
-
-      const width = w - margin.left - margin.right;
-      const height = h - margin.top - margin.bottom;
-
-      const svg = d3.select(elementSelector)
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-      // Build X scales and axis of heatmap
-      const x = d3.scaleBand()
-        .range([0, width])
-        .domain(xKeys)
-        .padding(0.1);
-
-      svg.append('g')
-        .attr('transform', `translate(0, ${height})`)
-        .attr('color', color.label)
-        .style('font-family', 'inherit')
-        .call(d3.axisBottom(x).tickSize(0))
-        .select('.domain')
-        .remove();
-
-      // Build Y scales and axis of heatmap
-      const y = d3.scaleBand()
-        .range([height, 0])
-        .domain(yKeys)
-        .padding(0.2);
-
-      svg.append('g')
-        .attr('color', color.label)
-        .style('font-family', 'inherit')
-        .call(d3.axisLeft(y).tickSize(0))
-        .select('.domain')
-        .remove();
-
-      // Build color scale
-      const step = d3.scaleLinear()
-        .domain([1, 5])
-        .range([1, d3.max(dataset, (d) => d.value)]);
-
-      const myColor = d3.scaleLinear()
-        .domain([0, step(2), step(3), step(4), d3.max(dataset, (d) => d.value)])
-        .range(color.cells);
-
-      // Draw data of heatmap
-      const dataCell = svg.selectAll()
-        .data(dataset, (d) => (`${d.day}':${d.hour}`))
-        .enter()
-        .append('rect');
-
-      dataCell
-        .attr('x', (d) => x(d.day))
-        .attr('y', (d) => y(d.hour))
-        .attr('width', x.bandwidth())
-        .attr('height', y.bandwidth())
-        .style('fill', (d) => myColor(d.value));
-
-      _addTooltip(dataCell);
+      _drawHeatmap();
+      _drawLegend();
 
       resolve(true);
     } catch (err) {
