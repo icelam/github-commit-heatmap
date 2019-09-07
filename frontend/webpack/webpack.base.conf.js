@@ -28,7 +28,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(['dist'], { root: Path.resolve(__dirname, '..') }),
     new CopyWebpackPlugin([
-      { from: Path.resolve(__dirname, '../src/assets/images'), to: 'assets/images', ignore: ['**/.DS_Store', '**/svg/*'] },
+      { from: Path.resolve(__dirname, '../src/assets/images'), to: 'assets/images', ignore: ['**/.DS_Store'] },
       { from: Path.resolve(__dirname, '../src/manifest.json'), to: 'manifest.json' }
     ]),
     new VueLoaderPlugin(),
