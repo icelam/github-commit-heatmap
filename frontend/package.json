@@ -55,6 +55,7 @@
     "core-js": "^3.6.1",
     "d3": "^5.15.0",
     "moment-timezone": "^0.5.27",
+    "regenerator-runtime": "^0.13.5",
     "vue": "^2.6.11",
     "vue-loader": "^15.8.3",
     "vue-router": "^3.1.2"

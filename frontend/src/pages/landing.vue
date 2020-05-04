@@ -15,6 +15,7 @@
 </template>
 
 <script>
+/* eslint-disable no-param-reassign */
 import moment from 'moment-timezone';
 import loading from '@components/loading';
 import errorMessage from '@components/errorMessage';
@@ -34,20 +35,82 @@ export default {
     };
   },
   methods: {
-    generateChart() {
-      githubService.getRepsitoriesDetails().then(({ data }) => {
+    async getRepoHistories() {
+      try {
+        const { data } = await githubService.getRepsitoriesDetails();
+        const nextPageCursors = [];
+
         // Get all repositories and its branch first, return the data in a flattern array
         const repoBranches = data.data.viewer.repositories.nodes.flatMap(
-          (repo) => repo.refs.nodes
+          (repo) => repo.refs.nodes.map((branch) => {
+            if (branch.target.history.pageInfo.hasNextPage) {
+              nextPageCursors.push({
+                repository: repo.name,
+                branch: branch.name,
+                cursor: branch.target.history.pageInfo.endCursor
+              });
+            }
+
+            return {
+              repository: repo.name,
+              branch: branch.name,
+              target: branch.target
+            };
+          })
         );
 
+        // Get all remaining paginations as Github GraphQL only allow getting 100 commit histories
+        // Since the total number of pagination is unknown, we use:
+        // - `while` loop instead of recursion to prevent exceeding maximum call stack
+        // - `await` to prevent exceeding Github API limit (calls per seconds) although it is slower
+        const repoBranchesPagination = [];
+
+        while (nextPageCursors.length) {
+          const cursor = nextPageCursors.pop();
+
+          // eslint-disable-next-line no-await-in-loop
+          const { data: nextPageData } = await githubService.getCommitsByRepository(
+            cursor.repository,
+            cursor.branch,
+            cursor.cursor
+          );
+
+          const { target } = nextPageData.data.viewer.repository.refs.nodes[0];
+          const { history: { pageInfo } } = target;
+
+          if (pageInfo.hasNextPage) {
+            nextPageCursors.push({
+              repository: cursor.repository,
+              branch: cursor.branch,
+              cursor: pageInfo.endCursor
+            });
+          }
+
+          repoBranchesPagination.push({
+            repository: cursor.repository,
+            branch: cursor.branch,
+            target
+          });
+        }
+
         // Extract and flat all histories
-        const repoHistories = repoBranches.flatMap(
+        const repoHistories = [
+          ...repoBranchesPagination,
+          ...repoBranches
+        ].flatMap(
           (branch) => branch.target.history.edges
         );
 
+        return repoHistories;
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
+    },
+    async generateChart(data) {
+      try {
         // Extract date and time of commits in Hong Kong timezone
-        const commitDayTime = repoHistories.map(
+        const commitDayTime = data.map(
           (commit) => {
             const commitTime = moment(commit.node.committedDate).tz('Asia/Taipei');
             return {
@@ -72,25 +135,26 @@ export default {
         const d3Dataset = DAY_KEYS.flatMap((day) => HOUR_KEYS.map((hour) => ({
           day,
           hour,
-          value: typeof commitStatistics[day] === 'object' && commitStatistics[day][hour] ? commitStatistics[day][hour] : 0
+          value: typeof commitStatistics[day] === 'object' && commitStatistics[day][hour]
+            ? commitStatistics[day][hour]
+            : 0
         })));
 
         const gitCommitHeatmap = heatmap('#chart', 280, 455, DAY_KEYS, HOUR_KEYS, d3Dataset);
-        gitCommitHeatmap.draw().then(() => {
-          this.pageReady = true;
-        }).catch(() => {
-          this.pageError = true;
-        });
-      }).catch((err) => {
-        this.pageError = true;
-      });
+
+        await gitCommitHeatmap.draw();
+        return true;
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
     }
   },
-  mounted() {
-    this.generateChart();
-  },
-  computed: {
-
+  async mounted() {
+    const commitHistory = await this.getRepoHistories();
+    const generateSuccess = commitHistory && await this.generateChart(commitHistory);
+    this.pageError = !generateSuccess;
+    this.pageReady = generateSuccess;
   }
 };
 </script>

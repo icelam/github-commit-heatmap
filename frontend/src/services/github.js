@@ -10,7 +10,13 @@ const getRepsitoriesDetails = () => axios.post(`${process.env.VUE_APP_API_DOMAIN
       resetAt
     }
     viewer {
-      repositories(first: 100, isFork: false, affiliations: OWNER, privacy: PUBLIC, orderBy: {field: NAME, direction: ASC}) {
+      repositories(
+        first: 100,
+        isFork: false,
+        affiliations: OWNER,
+        privacy: PUBLIC,
+        orderBy: {field: NAME, direction: ASC}
+      ) {
         totalCount
         nodes {
           ... on Repository {
@@ -29,6 +35,10 @@ const getRepsitoriesDetails = () => axios.post(`${process.env.VUE_APP_API_DOMAIN
                             committedDate
                           }
                         }
+                      }
+                      pageInfo {
+                        hasNextPage
+                        endCursor
                       }
                     }
                   }
@@ -51,4 +61,48 @@ const getRepsitoriesDetails = () => axios.post(`${process.env.VUE_APP_API_DOMAIN
   `
 });
 
-export default { getRepsitoriesDetails };
+const getCommitsByRepository = (repository, branch, cursor) => axios.post(`${process.env.VUE_APP_API_DOMAIN}/graphql`, {
+  query: `
+  {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+    viewer {
+      repository(name: "${repository}") {
+        refs(refPrefix: "refs/heads/", query:"${branch}", first: 100) {
+          nodes {
+            name
+            target {
+              ... on Commit {
+                history(author: {id: "MDQ6VXNlcjY3ODA0MjA="}${cursor && `, after: "${cursor}"`}) {
+                  totalCount
+                  edges {
+                    node {
+                      ... on Commit {
+                        committedDate
+                      }
+                    }
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                }
+              }
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+    }
+  }
+  `
+});
+
+export default { getRepsitoriesDetails, getCommitsByRepository };

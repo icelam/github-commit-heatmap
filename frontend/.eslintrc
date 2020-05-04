@@ -23,7 +23,7 @@
   },
   "parserOptions": {
     "sourceType": "module",
-    "ecmaVersion": 8
+    "ecmaVersion": 9
   },
   "rules":
   {
@@ -55,6 +55,14 @@
     ],
     "no-underscore-dangle": [
       "off"
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 120,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
     ]
   }
 }
