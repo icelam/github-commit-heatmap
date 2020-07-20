@@ -4,7 +4,7 @@ const heatmap = (elementSelector, w, h, xKeys, yKeys, dataset) => {
   // Shared colors
   const color = {
     label: '#767676',
-    cells: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'],
+    cells: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
     tooltip: {
       background: '#ffffff',
       text: '#a8a8a8',
