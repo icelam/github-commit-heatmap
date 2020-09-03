@@ -1,7 +1,8 @@
-const Path = require('path');
+/* eslint "import/no-extraneous-dependencies": ["error", {"optionalDependencies": false} ] */
+const path = require('path');
 const fs = require('fs');
 const Webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const dotenv = require('dotenv');
 const autoprefixer = require('autoprefixer');
 
@@ -10,13 +11,13 @@ const getClientEnvironment = require('./utils/env');
 
 // https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
 const dotenvFiles = [
-  Path.resolve(__dirname, '../.env.development.local'),
-  Path.resolve(__dirname, '../.env.test.local'),
-  Path.resolve(__dirname, '../.env.local'),
-  Path.resolve(__dirname, '../.env.development'),
-  Path.resolve(__dirname, '../.env.test'),
-  Path.resolve(__dirname, '../.env')
-].filter(dotenvFile => fs.existsSync(dotenvFile));
+  path.resolve(__dirname, '../.env.development.local'),
+  path.resolve(__dirname, '../.env.test.local'),
+  path.resolve(__dirname, '../.env.local'),
+  path.resolve(__dirname, '../.env.development'),
+  path.resolve(__dirname, '../.env.test'),
+  path.resolve(__dirname, '../.env')
+].filter((dotenvFile) => fs.existsSync(dotenvFile));
 
 console.log(`${dotenvFiles[0]} will be used.\n`);
 
@@ -49,7 +50,7 @@ module.exports = merge(baseWebpackConfig, {
     rules: [
       {
         test: /\.(js|vue)$/,
-        include: Path.resolve(__dirname, '../src'),
+        include: path.resolve(__dirname, '../src'),
         enforce: 'pre',
         loader: 'eslint-loader',
         options: {
@@ -62,7 +63,7 @@ module.exports = merge(baseWebpackConfig, {
       },
       {
         test: /\.(js)$/,
-        include: Path.resolve(__dirname, '../src'),
+        include: path.resolve(__dirname, '../src'),
         loader: 'babel-loader'
       },
       {

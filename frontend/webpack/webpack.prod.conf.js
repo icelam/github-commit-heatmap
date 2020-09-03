@@ -1,8 +1,10 @@
-const Path = require('path');
+/* eslint "import/no-extraneous-dependencies": ["error", {"optionalDependencies": false} ] */
+const path = require('path');
 const fs = require('fs');
 const Webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const cssnano = require('cssnano');
 const PrerenderSpaPlugin = require('prerender-spa-plugin');
 const WorkboxPlugin = require('workbox-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
@@ -14,10 +16,10 @@ const getClientEnvironment = require('./utils/env');
 
 // https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
 const dotenvFiles = [
-  Path.resolve(__dirname, '../.env.production.local'),
-  Path.resolve(__dirname, '../.env.production'),
-  Path.resolve(__dirname, '../.env')
-].filter(dotenvFile => fs.existsSync(dotenvFile));
+  path.resolve(__dirname, '../.env.production.local'),
+  path.resolve(__dirname, '../.env.production'),
+  path.resolve(__dirname, '../.env')
+].filter((dotenvFile) => fs.existsSync(dotenvFile));
 
 console.log(`${dotenvFiles[0]} will be used.\n`);
 
@@ -44,7 +46,7 @@ module.exports = merge(baseWebpackConfig, {
       filename: 'assets/css/bundle.[chunkhash:8].css'
     }),
     new PrerenderSpaPlugin({
-      staticDir: Path.join(__dirname, '../dist'),
+      staticDir: path.join(__dirname, '../dist'),
       routes: ['/'],
       postProcess(renderedRoute) {
         renderedRoute.html = renderedRoute.html.replace(/<script (.*?)src="(.*?)google(.*?)"(.*?)><\/script>/g, '');
@@ -96,7 +98,7 @@ module.exports = merge(baseWebpackConfig, {
               ident: 'postcss',
               plugins: [
                 autoprefixer(),
-                require('cssnano')(
+                cssnano(
                   {
                     preset: ['default', {
                       discardComments: {
