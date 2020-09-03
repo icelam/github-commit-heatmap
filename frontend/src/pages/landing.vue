@@ -107,6 +107,18 @@ export default {
         return null;
       }
     },
+    deduplicateCommitHistory(data) {
+      const commitHistoryHashmap = {};
+      return data
+        ? data.filter((history) => {
+          if (!commitHistoryHashmap[history.node.oid]) {
+            commitHistoryHashmap[history.node.oid] = true;
+            return true;
+          }
+          return false;
+        })
+        : null;
+    },
     async generateChart(data) {
       try {
         // Extract date and time of commits in Hong Kong timezone
@@ -152,7 +164,8 @@ export default {
   },
   async mounted() {
     const commitHistory = await this.getRepoHistories();
-    const generateSuccess = commitHistory && await this.generateChart(commitHistory);
+    const deduplicatedCommitHistory = this.deduplicateCommitHistory(commitHistory);
+    const generateSuccess = deduplicatedCommitHistory && await this.generateChart(deduplicatedCommitHistory);
     this.pageError = !generateSuccess;
     this.pageReady = generateSuccess;
   }

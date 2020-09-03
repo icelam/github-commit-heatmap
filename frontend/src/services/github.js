@@ -32,6 +32,7 @@ const getRepsitoriesDetails = () => axios.post(`${process.env.VUE_APP_API_DOMAIN
                       edges {
                         node {
                           ... on Commit {
+                            oid
                             committedDate
                           }
                         }
@@ -82,6 +83,7 @@ const getCommitsByRepository = (repository, branch, cursor) => axios.post(`${pro
                   edges {
                     node {
                       ... on Commit {
+                        oid
                         committedDate
                       }
                     }
